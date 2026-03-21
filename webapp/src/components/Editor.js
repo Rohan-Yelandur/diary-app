@@ -47,13 +47,6 @@ function formatTimestamp(isoString) {
 }
 
 /**
- * Get number of days in a given month/year
- */
-function daysInMonth(year, month) {
-  return new Date(year, month + 1, 0).getDate();
-}
-
-/**
  * Generate a grid of days for the calendar
  */
 function getDaysGrid(year, month) {
@@ -128,7 +121,6 @@ function CustomSelect({ value, options, onChange }) {
 function DateTimePicker({ dateParts, onChange, onClose }) {
   const pickerRef = useRef(null);
   const [tab, setTab] = useState('date'); // 'date' | 'time'
-  const [clockMode, setClockMode] = useState('hour'); // 'hour' | 'minute'
 
   // Calendar View State
   const [viewYear, setViewYear] = useState(dateParts.year);
@@ -155,12 +147,6 @@ function DateTimePicker({ dateParts, onChange, onClose }) {
 
   const isPM = dateParts.hour >= 12;
   const display12 = dateParts.hour === 0 ? 12 : dateParts.hour > 12 ? dateParts.hour - 12 : dateParts.hour;
-
-  const setHour12 = (h12) => {
-    const h24 = isPM ? (h12 === 12 ? 12 : h12 + 12) : (h12 === 12 ? 0 : h12);
-    update('hour', h24);
-    setTimeout(() => setClockMode('minute'), 300); // smooth switch to minutes
-  };
 
   const toggleAMPM = (pm) => {
     if (isPM === pm) return;
