@@ -1,0 +1,156 @@
+.sidebar {
+  width: 320px;
+  min-width: 320px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- New Entry Button ---- */
+.new-entry-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  margin: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-accent-primary);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition);
+}
+
+.new-entry-btn:hover {
+  background: var(--color-accent-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(87, 204, 153, 0.3);
+}
+
+.new-entry-btn:active {
+  transform: translateY(0);
+}
+
+/* ---- Month Navigation ---- */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.month-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.month-nav-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  transition: all var(--transition);
+}
+
+.month-nav-btn:hover:not(:disabled) {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+.month-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ---- Entry List ---- */
+.entry-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xs) 0;
+}
+
+.entry-item {
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all var(--transition);
+}
+
+.entry-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.entry-item.active {
+  border-left-color: var(--color-accent-secondary);
+  background: rgba(87, 204, 153, 0.06);
+}
+
+.entry-item-title {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-item-title.untitled {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.entry-item-date {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.entry-item-preview {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.7;
+}
+
+/* ---- Sidebar Empty ---- */
+.sidebar-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+/* ---- Loading entries ---- */
+.sidebar-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    border-right: none;
+  }
+}
