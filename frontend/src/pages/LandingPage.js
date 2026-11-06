@@ -31,7 +31,7 @@ export default function LandingPage() {
             onClick={dismissBanner}
             aria-label="Dismiss"
           >
-            ×
+            x
           </button>
         </div>
       )}

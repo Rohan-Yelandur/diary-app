@@ -1,16 +1,19 @@
 .landing-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: var(--color-bg);
   padding: var(--spacing-lg);
 }
 
 .landing-content {
+  width: 100%;
   max-width: 480px;
   text-align: center;
+  margin-top: 8vh;
 }
 
 .landing-logo {
@@ -21,7 +24,7 @@
 }
 
 .landing-app-name {
-  font-size: 4.5rem;
+  font-size: clamp(2.75rem, 14vw, 4.5rem);
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: -1px;
@@ -38,14 +41,14 @@
 .landing-tagline {
   font-size: var(--font-size-lg);
   color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
   line-height: 1.6;
 }
 
 .landing-features {
   list-style: none;
   text-align: left;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
@@ -114,7 +117,8 @@
 }
 
 .landing-footer {
-  margin-top: var(--spacing-xl);
+  margin-top: auto;
+  padding-top: var(--spacing-lg);
   text-align: center;
   font-size: var(--font-size-sm);
 }
@@ -151,4 +155,30 @@
 
 .session-expired-close:hover {
   opacity: 1;
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 480px) {
+  .landing-page {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .landing-tagline {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .landing-features {
+    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+  }
+
+  .landing-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .landing-footer {
+    padding-top: var(--spacing-lg);
+  }
 }
