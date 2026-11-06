@@ -20,6 +20,16 @@
   font-size: var(--font-size-lg);
   font-weight: 600;
   letter-spacing: -0.5px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.diary-header-title:hover {
+  opacity: 0.75;
 }
 
 .diary-header-title span {

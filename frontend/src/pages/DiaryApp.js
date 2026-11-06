@@ -37,10 +37,6 @@ function toFileEntries(entries) {
   return entries.map(({ id, createdAt, title, content }) => ({ id, createdAt, title, content }));
 }
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
 
 export default function DiaryApp() {
   const { authenticated, loading, signOut } = useAuth();
@@ -55,6 +51,8 @@ export default function DiaryApp() {
   const [folderId, setFolderId] = useState(null);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
+  // ID of an entry just created from a writing prompt, so the editor can focus it
+  const [promptEntryId, setPromptEntryId] = useState(null);
 
   // Cache file IDs for each month
   const [fileIdCache, setFileIdCache] = useState({});
@@ -65,9 +63,13 @@ export default function DiaryApp() {
   // Guards against looping if folder recovery itself fails
   const folderRecoveredRef = useRef(false);
 
+  // Set when the user signs out deliberately, so the redirect below
+  // doesn't flag it as an expired session
+  const signingOutRef = useRef(false);
+
   // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !authenticated) {
+    if (!loading && !authenticated && !signingOutRef.current) {
       navigate('/?reason=session_expired');
     }
   }, [loading, authenticated, navigate]);
@@ -177,14 +179,17 @@ export default function DiaryApp() {
   })();
 
   // ---- New Entry ----
-  const handleNewEntry = () => {
+  // initialContent is optional; the sidebar button passes a click event, which is ignored.
+  const handleNewEntry = (initialContent) => {
+    const content = typeof initialContent === 'string' ? initialContent : '';
     const nowISO = toLocalISOString();
     const newEntry = {
       id: generateId(),
       createdAt: nowISO,
       title: '',
-      content: '',
+      content,
     };
+    setPromptEntryId(content ? newEntry.id : null);
 
     // If we navigated away from the current month, snap back
     const entryDate = new Date(nowISO);
@@ -328,8 +333,15 @@ export default function DiaryApp() {
     setShowEditor(false);
   };
 
+  // ---- Home (deselect entry, show the empty screen) ----
+  const handleHome = () => {
+    setSelectedId(null);
+    setShowEditor(false);
+  };
+
   // ---- Sign Out ----
   const handleSignOut = () => {
+    signingOutRef.current = true;
     signOut();
     navigate('/');
   };
@@ -345,17 +357,17 @@ export default function DiaryApp() {
 
   const selectedEntry = entries.find((e) => e.id === selectedId) || null;
 
-  const emptyMessage =
-    entries.length === 0
-      ? `No entries for ${MONTH_NAMES[currentMonth]} ${currentYear}. Hit '+ New Entry' to start.`
-      : 'Select an entry or create a new one.';
-
   return (
     <div className="diary-app">
       <header className="diary-header">
-        <div className="diary-header-title">
+        <button
+          type="button"
+          className="diary-header-title"
+          onClick={handleHome}
+          title="Back to home"
+        >
           <span>My</span>Day
-        </div>
+        </button>
         <button id="sign-out-btn" className="sign-out-btn" onClick={handleSignOut}>
           Sign out
         </button>
@@ -379,7 +391,8 @@ export default function DiaryApp() {
           onSave={handleSave}
           onDelete={handleDelete}
           onBack={handleBack}
-          emptyMessage={selectedEntry ? null : emptyMessage}
+          onStart={handleNewEntry}
+          focusContentOnLoad={!!selectedEntry && selectedEntry.id === promptEntryId}
         />
       </main>
     </div>

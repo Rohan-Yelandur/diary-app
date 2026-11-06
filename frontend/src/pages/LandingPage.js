@@ -6,8 +6,12 @@ import './LandingPage.css';
 export default function LandingPage() {
   const { authenticated, signIn } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const sessionExpired = searchParams.get('reason') === 'session_expired';
+
+  const dismissBanner = () => {
+    setSearchParams({}, { replace: true });
+  };
 
   const handleClick = () => {
     if (authenticated) {
@@ -21,7 +25,14 @@ export default function LandingPage() {
     <div className="landing-page">
       {sessionExpired && (
         <div className="session-expired-banner">
-          Your session expired. Please sign in again.
+          <span>Your session expired. Please sign in again.</span>
+          <button
+            className="session-expired-close"
+            onClick={dismissBanner}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -42,7 +53,7 @@ export default function LandingPage() {
             All your data is stored in json, easily extractable.
           </li>
           <li>
-            A Minimalist writing experience, with nothing in your way.
+            A mIinimalist writing experience, with nothing in your way.
           </li>
         </ul>
 

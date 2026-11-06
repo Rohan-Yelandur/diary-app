@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toLocalISOString } from '../utils/date';
+import HomeScreen from './HomeScreen';
 import './Editor.css';
 
 const MONTH_NAMES = [
@@ -261,7 +262,8 @@ export default function Editor({
   onSave,
   onDelete,
   onBack,
-  emptyMessage,
+  onStart,
+  focusContentOnLoad = false,
 }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -281,6 +283,16 @@ export default function Editor({
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }, [content, entry?.id]);
+
+  // For entries started from a prompt, put the cursor at the end of the text
+  useEffect(() => {
+    if (!focusContentOnLoad || !entry) return;
+    const el = contentRef.current;
+    if (!el) return;
+    el.focus();
+    const end = el.value.length;
+    el.setSelectionRange(end, end);
+  }, [entry?.id, focusContentOnLoad]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync local state when entry changes
   useEffect(() => {
@@ -376,9 +388,7 @@ export default function Editor({
   if (!entry) {
     return (
       <div className="editor-container">
-        <div className="editor-empty">
-          {emptyMessage || 'Select an entry or create a new one.'}
-        </div>
+        <HomeScreen onStart={onStart} />
       </div>
     );
   }
