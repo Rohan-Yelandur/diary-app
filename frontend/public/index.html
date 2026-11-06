@@ -5,6 +5,7 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f4f3ee" />
+    <meta name="google-site-verification" content="qqNFzaoCMDOixCvLpI9xzKmQEa5o2tNvvmbheFwvzeQ" />
     <meta name="description" content="A quiet place to write. Your words live in your Google Drive." />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
@@ -17,10 +18,16 @@
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    <title>Diary</title>
+    <title>MyDay – A quiet place to write</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <main style="font-family: sans-serif; max-width: 560px; margin: 64px auto; padding: 0 16px; color: #1a1a1a;">
+        <h1>MyDay</h1>
+        <p>A quiet place to write. MyDay is a free, browser-based diary that saves your entries to your own Google Drive. It requests only permission to manage the files it creates, never sees the rest of your Drive, and runs with no server of its own.</p>
+        <p><a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms of Service</a></p>
+      </main>
+    </div>
   </body>
 </html>

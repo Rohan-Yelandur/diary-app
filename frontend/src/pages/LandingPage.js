@@ -45,6 +45,18 @@ export default function LandingPage() {
           </li>
         </ul>
 
+        <h2 className="landing-subheading">How it works</h2>
+        <p className="landing-description">
+          MyDay is a free, browser-based diary. Sign in with your Google account and the app
+          creates a single "MyDay - Diary App" folder in your Google Drive. Each month's entries
+          are saved there as a plain JSON file, and any photos you attach go in an Images
+          subfolder. The app only asks for permission to manage files it creates itself, so it
+          never sees the rest of your Drive. There is no MyDay server: your writing travels
+          directly between your browser and Google. Read our{' '}
+          <Link to="/privacy">Privacy Policy</Link> and{' '}
+          <Link to="/terms">Terms of Service</Link> for details.
+        </p>
+
         <button
           id="landing-cta"
           className="landing-btn landing-btn-primary"

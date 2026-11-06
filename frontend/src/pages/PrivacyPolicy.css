@@ -61,3 +61,16 @@
   margin-top: 0;
   margin-bottom: var(--spacing-lg);
 }
+
+.privacy-content ul {
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.privacy-content li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.privacy-content a {
+  color: var(--color-accent-secondary);
+}

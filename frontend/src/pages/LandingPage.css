@@ -122,3 +122,28 @@
 .landing-footer a + a {
   margin-left: var(--spacing-md);
 }
+
+.landing-subheading {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.landing-description {
+  text-align: left;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--spacing-xl);
+}
+
+.landing-description a {
+  color: var(--color-accent-secondary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.landing-description a:hover {
+  text-decoration: underline;
+}
