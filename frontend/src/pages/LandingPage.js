@@ -27,35 +27,24 @@ export default function LandingPage() {
 
       <div className="landing-content">
         <h1 className="landing-app-name">
+          <img src="/myday-logo-light.png" alt="" className="landing-logo" />
           <span>My</span>Day
         </h1>
         <p className="landing-tagline">
-          A quiet place to write. Your words live in your Google Drive.
+          Your day. Your words.
         </p>
 
         <ul className="landing-features">
           <li>
-            Your data lives in your own Google Drive — we never see it.
+            Your data lives in your own Google Drive, no one else ever sees it.
           </li>
           <li>
-            One folder, one file per month. Simple and portable.
+            All your data is stored in json, easily extractable.
           </li>
           <li>
-            Minimalist writing experience, nothing in your way.
+            A Minimalist writing experience, with nothing in your way.
           </li>
         </ul>
-
-        <h2 className="landing-subheading">How it works</h2>
-        <p className="landing-description">
-          MyDay is a free, browser-based diary. Sign in with your Google account and the app
-          creates a single "MyDay - Diary App" folder in your Google Drive. Each month's entries
-          are saved there as a plain JSON file, and any photos you attach go in an Images
-          subfolder. The app only asks for permission to manage files it creates itself, so it
-          never sees the rest of your Drive. There is no MyDay server: your writing travels
-          directly between your browser and Google. Read our{' '}
-          <Link to="/privacy">Privacy Policy</Link> and{' '}
-          <Link to="/terms">Terms of Service</Link> for details.
-        </p>
 
         <button
           id="landing-cta"

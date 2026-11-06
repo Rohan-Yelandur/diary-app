@@ -27,7 +27,7 @@ export default function PrivacyPolicy() {
         </p>
         <ul>
           <li>We do not collect your name, email address, or Google profile information.</li>
-          <li>We do not store copies of your diary entries or images anywhere other than your own Google Drive.</li>
+          <li>We do not store copies of your diary entries anywhere other than your own Google Drive.</li>
           <li>We do not use cookies, analytics, tracking pixels, or advertising.</li>
           <li>We do not keep server logs, because there is no server.</li>
         </ul>
@@ -42,15 +42,14 @@ export default function PrivacyPolicy() {
         <p>Using this permission, the app creates and manages the following in your Google Drive:</p>
         <ul>
           <li>A folder named "MyDay - Diary App" in the root of your Drive.</li>
-          <li>One JSON file per month (for example 2026-11.json) containing your entries' titles, text, timestamps, and image references.</li>
-          <li>An "Images" subfolder containing any photos you attach to entries.</li>
+          <li>One JSON file per month (for example 2026-11.json) containing your entries' titles, text, and timestamps.</li>
           <li>A README.txt file describing the folder.</li>
         </ul>
 
         <h2>How Google user data is used</h2>
         <p>
           Your Google Drive data is used for one purpose only: to save and load your diary entries
-          and images so that you can read and edit them in the app. The data is transferred
+          so that you can read and edit them in the app. The data is transferred
           directly between your browser and Google's servers over HTTPS. It is never sent to us or
           to any third party.
         </p>

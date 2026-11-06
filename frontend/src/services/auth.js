@@ -86,6 +86,7 @@ export function signOut() {
   tokenExpiry = null;
   // Clear cached folder ID on sign-out
   localStorage.removeItem('diaryAppFolderId');
+  localStorage.removeItem('diaryAppImagesFolderId');
 }
 
 /**

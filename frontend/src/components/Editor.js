@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toLocalISOString } from '../utils/date';
-import { uploadImage, fetchImageBlob, deleteImage } from '../services/drive';
 import './Editor.css';
 
 const MONTH_NAMES = [
@@ -263,13 +262,9 @@ export default function Editor({
   onDelete,
   onBack,
   emptyMessage,
-  imagesFolderId,
 }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [images, setImages] = useState([]);
-  const [imageUrls, setImageUrls] = useState({});
-  const [isUploading, setIsUploading] = useState(false);
   const [dateParts, setDateParts] = useState(null);
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
@@ -277,40 +272,35 @@ export default function Editor({
   const [fadeOut, setFadeOut] = useState(false);
   const debounceRef = useRef(null);
   const entryRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const contentRef = useRef(null);
+
+  // Grow the textarea to fit its content so the page scrolls, not the box
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [content, entry?.id]);
 
   // Sync local state when entry changes
   useEffect(() => {
     if (entry) {
       setTitle(entry.title || '');
       setContent(entry.content || '');
-      const entryImages = entry.images || [];
-      setImages(entryImages);
       setDateParts(parseDate(entry.createdAt));
       setIsEditingDate(false);
       setSaveStatus(null);
       setFadeOut(false);
       setShowDeleteConfirm(false);
       entryRef.current = entry.id;
-
-      // Fetch blobs for missing images
-      entryImages.forEach((imgId) => {
-        if (!imageUrls[imgId]) {
-          fetchImageBlob(imgId)
-            .then((url) => {
-              setImageUrls((prev) => ({ ...prev, [imgId]: url }));
-            })
-            .catch((err) => console.error('Failed to load image blob', err));
-        }
-      });
     }
   }, [entry?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-save with debounce
   const triggerSave = useCallback(
-    (newTitle, newContent, newDateParts, newImages) => {
+    (newTitle, newContent, newDateParts) => {
       if (!entry) return;
-      if (!newTitle.trim() && !newContent.trim() && newImages.length === 0) return;
+      if (!newTitle.trim() && !newContent.trim()) return;
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -320,7 +310,7 @@ export default function Editor({
         setSaveStatus('saving');
         try {
           const newCreatedAt = buildIso(newDateParts);
-          await onSave(entry.id, newTitle, newContent, newCreatedAt, newImages);
+          await onSave(entry.id, newTitle, newContent, newCreatedAt);
           if (entryRef.current === entry.id) {
             setSaveStatus('saved');
             setFadeOut(false);
@@ -356,69 +346,18 @@ export default function Editor({
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
-    triggerSave(newTitle, content, dateParts, images);
+    triggerSave(newTitle, content, dateParts);
   };
 
   const handleContentChange = (e) => {
     const newContent = e.target.value;
     setContent(newContent);
-    triggerSave(title, newContent, dateParts, images);
+    triggerSave(title, newContent, dateParts);
   };
 
   const handleDatePartsChange = (newParts) => {
     setDateParts(newParts);
-    triggerSave(title, content, newParts, images);
-  };
-
-  // ---- Image Handling ----
-  const handleFileSelect = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-
-    if (images.length + files.length > 5) {
-      alert(`You can only attach up to 5 images per entry. (Current: ${images.length})`);
-      return;
-    }
-
-    setIsUploading(true);
-    const newFileIds = [];
-    const newUrls = { ...imageUrls };
-
-    for (const file of files) {
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit check
-        alert(`File ${file.name} is too large (max 10MB)`);
-        continue;
-      }
-      try {
-        const fileId = await uploadImage(file, imagesFolderId);
-        newFileIds.push(fileId);
-        newUrls[fileId] = URL.createObjectURL(file);
-      } catch (err) {
-        console.error('Failed to upload', err);
-        alert(`Failed to upload ${file.name}`);
-      }
-    }
-
-    if (newFileIds.length > 0) {
-      const updatedImages = [...images, ...newFileIds];
-      setImages(updatedImages);
-      setImageUrls(newUrls);
-      triggerSave(title, content, dateParts, updatedImages);
-    }
-
-    setIsUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleRemoveImage = (imgId) => {
-    if (!window.confirm('Remove this image? This permanently deletes it from your Drive.')) return;
-
-    const updatedImages = images.filter((id) => id !== imgId);
-    setImages(updatedImages);
-    triggerSave(title, content, dateParts, updatedImages);
-
-    // Clean up from Drive 
-    deleteImage(imgId).catch(err => console.error('Failed to delete image', err));
+    triggerSave(title, content, newParts);
   };
 
   const handleDeleteClick = () => {
@@ -522,51 +461,13 @@ export default function Editor({
         </div>
 
         <textarea
+          ref={contentRef}
           id="editor-content"
           className="editor-content"
           placeholder="Write something..."
           value={content}
           onChange={handleContentChange}
         />
-
-        {images.length > 0 && (
-          <div className="editor-images-grid">
-            {images.map((imgId) => (
-              <div key={imgId} className="editor-image-wrapper">
-                {imageUrls[imgId] ? (
-                  <img src={imageUrls[imgId]} alt="Attachment" className="editor-image" />
-                ) : (
-                  <div className="editor-image-loading" />
-                )}
-                <button
-                  className="editor-image-remove"
-                  onClick={() => handleRemoveImage(imgId)}
-                  title="Remove image"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="editor-footer">
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            style={{ display: 'none' }}
-          />
-          <button
-            className="editor-attach-btn"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading || images.length >= 5}
-          >
-            {isUploading ? 'Uploading...' : `📸 Attach Image (${images.length}/5)`}
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -9,6 +9,8 @@
   --color-text-secondary: #666666;
   --color-surface: #ffffff;
   --color-border: #e0dfda;
+  --color-scrollbar: #bdbbb3;
+  --color-scrollbar-hover: #8f8d85;
   --color-error: #e74c3c;
 
   --font-family: 'Inter', sans-serif;
@@ -75,6 +77,11 @@ a {
 /* ============================================
    Scrollbar
    ============================================ */
+* {
+  scrollbar-color: var(--color-scrollbar) transparent;
+  scrollbar-width: thin;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -84,12 +91,12 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-scrollbar);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
+  background: var(--color-scrollbar-hover);
 }
 
 /* ============================================

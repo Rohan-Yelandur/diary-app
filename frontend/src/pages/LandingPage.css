@@ -1,6 +1,7 @@
 .landing-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: var(--color-bg);
@@ -12,12 +13,22 @@
   text-align: center;
 }
 
+.landing-logo {
+  width: 1.8em;
+  height: 1.8em;
+  margin-right: var(--spacing-sm);
+  vertical-align: -0.2em;
+}
+
 .landing-app-name {
-  font-size: 3rem;
+  font-size: 4.5rem;
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: -1px;
   margin-bottom: var(--spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .landing-app-name span {
@@ -101,10 +112,7 @@
 }
 
 .landing-footer {
-  position: fixed;
-  bottom: var(--spacing-md);
-  left: 0;
-  right: 0;
+  margin-top: var(--spacing-xl);
   text-align: center;
   font-size: var(--font-size-sm);
 }
@@ -123,27 +131,3 @@
   margin-left: var(--spacing-md);
 }
 
-.landing-subheading {
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-sm);
-}
-
-.landing-description {
-  text-align: left;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.7;
-  margin-bottom: var(--spacing-xl);
-}
-
-.landing-description a {
-  color: var(--color-accent-secondary);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.landing-description a:hover {
-  text-decoration: underline;
-}

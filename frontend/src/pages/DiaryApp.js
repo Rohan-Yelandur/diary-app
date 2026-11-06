@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { ensureAppFolder, loadMonthFile, saveMonthFile, ensureImagesFolder, deleteImage } from '../services/drive';
+import { ensureAppFolder, loadMonthFile, saveMonthFile, invalidateFolderCache } from '../services/drive';
 import { toLocalISOString } from '../utils/date';
 import Sidebar from '../components/Sidebar';
 import Editor from '../components/Editor';
@@ -27,6 +27,16 @@ function toYearMonthStr(year, month) {
   return `${year}-${String(month + 1).padStart(2, '0')}`;
 }
 
+// Backfill id for legacy entries that don't have one
+function withIds(entries) {
+  return (entries || []).map((e) => ({ ...e, id: e.id || generateId() }));
+}
+
+// Strip to the fields that get written to Drive
+function toFileEntries(entries) {
+  return entries.map(({ id, createdAt, title, content }) => ({ id, createdAt, title, content }));
+}
+
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
@@ -43,12 +53,17 @@ export default function DiaryApp() {
   const [entries, setEntries] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [folderId, setFolderId] = useState(null);
-  const [imagesFolderId, setImagesFolderId] = useState(null);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
 
   // Cache file IDs for each month
   const [fileIdCache, setFileIdCache] = useState({});
+  // Cache loaded entries per month so revisits cost no API calls
+  const [monthCache, setMonthCache] = useState({});
+  // A new entry created while viewing another month, to append after snapping back
+  const pendingNewEntryRef = useRef(null);
+  // Guards against looping if folder recovery itself fails
+  const folderRecoveredRef = useRef(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -61,11 +76,7 @@ export default function DiaryApp() {
   useEffect(() => {
     if (authenticated) {
       ensureAppFolder()
-        .then((id) => {
-          setFolderId(id);
-          return ensureImagesFolder(id);
-        })
-        .then((imgId) => setImagesFolderId(imgId))
+        .then((id) => setFolderId(id))
         .catch((err) => {
           showToast('Could not access Google Drive. Check your connection.', 'error');
           console.error(err);
@@ -73,33 +84,62 @@ export default function DiaryApp() {
     }
   }, [authenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // If a request 404s, the cached folder ID is stale. Re-resolve once and let
+  // the month effect re-run with the new folderId.
+  const recoverFolder = useCallback(async () => {
+    if (folderRecoveredRef.current) return false;
+    folderRecoveredRef.current = true;
+    invalidateFolderCache();
+    setFileIdCache({});
+    setMonthCache({});
+    const id = await ensureAppFolder();
+    setFolderId(id);
+    return true;
+  }, []);
+
   // Load entries when month or folder changes
   useEffect(() => {
     if (!folderId) return;
 
     const yearMonth = toYearMonthStr(currentYear, currentMonth);
-    setLoadingEntries(true);
     setSelectedId(null);
     setShowEditor(false);
 
-    loadMonthFile(yearMonth, folderId)
+    const applyLoaded = (loaded) => {
+      const pending = pendingNewEntryRef.current;
+      pendingNewEntryRef.current = null;
+      if (pending) {
+        setEntries([...loaded, pending]);
+        setSelectedId(pending.id);
+        setShowEditor(true);
+      } else {
+        setEntries(loaded);
+      }
+    };
+
+    // Cache hit: no network
+    if (monthCache[yearMonth]) {
+      applyLoaded(monthCache[yearMonth]);
+      return;
+    }
+
+    setLoadingEntries(true);
+    loadMonthFile(yearMonth, folderId, fileIdCache[yearMonth] || null)
       .then((data) => {
+        const loaded = data ? withIds(data.entries) : [];
         if (data) {
-          // Backfill id for legacy entries that don't have one
-          const entriesWithIds = (data.entries || []).map((e) => ({
-            ...e,
-            id: e.id || generateId(),
-          }));
-          setEntries(entriesWithIds);
           setFileIdCache((prev) => ({ ...prev, [yearMonth]: data._fileId }));
-        } else {
-          setEntries([]);
         }
+        setMonthCache((prev) => ({ ...prev, [yearMonth]: loaded }));
+        applyLoaded(loaded);
         setLoadingEntries(false);
       })
-      .catch((err) => {
-        showToast('Could not load entries. Check your connection.', 'error');
+      .catch(async (err) => {
         console.error(err);
+        if (err.status === 404 && (await recoverFolder().catch(() => false))) {
+          return; // effect re-runs with the fresh folderId
+        }
+        showToast('Could not load entries. Check your connection.', 'error');
         setEntries([]);
         setLoadingEntries(false);
       });
@@ -144,7 +184,6 @@ export default function DiaryApp() {
       createdAt: nowISO,
       title: '',
       content: '',
-      images: [],
     };
 
     // If we navigated away from the current month, snap back
@@ -153,8 +192,11 @@ export default function DiaryApp() {
     const entryMonth = entryDate.getMonth();
     
     if (entryYear !== currentYear || entryMonth !== currentMonth) {
+      // The month effect will load the target month and then append this entry
+      pendingNewEntryRef.current = newEntry;
       setCurrentYear(entryYear);
       setCurrentMonth(entryMonth);
+      return;
     }
 
     setEntries((prev) => [...prev, newEntry]);
@@ -170,7 +212,7 @@ export default function DiaryApp() {
 
   // ---- Save Entry ----
   const handleSave = useCallback(
-    async (id, newTitle, newContent, newCreatedAt, newImages) => {
+    async (id, newTitle, newContent, newCreatedAt) => {
       const currentViewYearMonth = toYearMonthStr(currentYear, currentMonth);
       const oldEntry = entries.find((e) => e.id === id);
       if (!oldEntry) return;
@@ -184,20 +226,15 @@ export default function DiaryApp() {
         title: newTitle,
         content: newContent,
         createdAt: finalCreatedAt,
-        images: newImages || oldEntry.images || [],
       };
 
       if (!isCrossMonthMove) {
         // 1. STANDARD SAVE (Same Month)
         const updatedEntries = entries.map((e) => (e.id === id ? updatedEntry : e));
         setEntries(updatedEntries);
+        setMonthCache((prev) => ({ ...prev, [currentViewYearMonth]: updatedEntries }));
 
-        const fileData = {
-          month: currentViewYearMonth,
-          entries: updatedEntries.map(({ id, createdAt, title, content, images }) => ({
-            id, createdAt, title, content, images: images || [],
-          })),
-        };
+        const fileData = { month: currentViewYearMonth, entries: toFileEntries(updatedEntries) };
 
         try {
           const existingFileId = fileIdCache[currentViewYearMonth] || null;
@@ -212,40 +249,32 @@ export default function DiaryApp() {
         // 2. CROSS-MONTH MOVE
         const currentEntriesRemoved = entries.filter((e) => e.id !== id);
         setEntries(currentEntriesRemoved);
+        setMonthCache((prev) => ({ ...prev, [currentViewYearMonth]: currentEntriesRemoved }));
         setSelectedId(null);
         setShowEditor(false);
 
         try {
           // Save current month file (now without the entry)
-          const currentFileData = {
-            month: currentViewYearMonth,
-            entries: currentEntriesRemoved.map(({ id, createdAt, title, content, images }) => ({
-              id, createdAt, title, content, images: images || [],
-            })),
-          };
+          const currentFileData = { month: currentViewYearMonth, entries: toFileEntries(currentEntriesRemoved) };
           const existingFileId = fileIdCache[currentViewYearMonth] || null;
           const currentSavedId = await saveMonthFile(currentViewYearMonth, currentFileData, folderId, existingFileId);
           setFileIdCache((prev) => ({ ...prev, [currentViewYearMonth]: currentSavedId }));
 
-          // Load target month file
-          let targetEntries = [];
+          // Load target month: from cache if we have it, otherwise from Drive
+          let targetEntries;
           let targetExistingId = fileIdCache[targetYearMonth] || null;
-          const targetData = await loadMonthFile(targetYearMonth, folderId);
-          
-          if (targetData) {
-            targetEntries = targetData.entries || [];
-            targetExistingId = targetData._fileId;
+          if (monthCache[targetYearMonth]) {
+            targetEntries = [...monthCache[targetYearMonth]];
+          } else {
+            const targetData = await loadMonthFile(targetYearMonth, folderId, targetExistingId);
+            targetEntries = targetData ? withIds(targetData.entries) : [];
+            if (targetData) targetExistingId = targetData._fileId;
           }
-          
-          targetEntries.push(updatedEntry);
-          
-          const targetFileData = {
-            month: targetYearMonth,
-            entries: targetEntries.map(({ id, createdAt, title, content, images }) => ({
-              id, createdAt, title, content, images: images || [],
-            })),
-          };
 
+          targetEntries.push(updatedEntry);
+          setMonthCache((prev) => ({ ...prev, [targetYearMonth]: targetEntries }));
+
+          const targetFileData = { month: targetYearMonth, entries: toFileEntries(targetEntries) };
           const targetSavedId = await saveMonthFile(targetYearMonth, targetFileData, folderId, targetExistingId);
           setFileIdCache((prev) => ({ ...prev, [targetYearMonth]: targetSavedId }));
           
@@ -257,25 +286,18 @@ export default function DiaryApp() {
         }
       }
     },
-    [entries, currentYear, currentMonth, folderId, fileIdCache, showToast]
+    [entries, currentYear, currentMonth, folderId, fileIdCache, monthCache, showToast]
   );
 
   // ---- Delete Entry ----
   const handleDelete = useCallback(
     async (id) => {
-      // Delete attached images from Drive
-      const entryToDelete = entries.find((e) => e.id === id);
-      if (entryToDelete && entryToDelete.images && entryToDelete.images.length > 0) {
-        entryToDelete.images.forEach((imgId) => {
-          deleteImage(imgId).catch((err) => console.error('Failed to clean up image', err));
-        });
-      }
-
       const yearMonth = toYearMonthStr(currentYear, currentMonth);
       const existingFileId = fileIdCache[yearMonth] || null;
 
       const updatedEntries = entries.filter((e) => e.id !== id);
       setEntries(updatedEntries);
+      setMonthCache((prev) => ({ ...prev, [yearMonth]: updatedEntries }));
 
       // Select next available entry
       if (updatedEntries.length > 0) {
@@ -288,16 +310,7 @@ export default function DiaryApp() {
         setShowEditor(false);
       }
 
-      const fileData = {
-        month: yearMonth,
-        entries: updatedEntries.map(({ id, createdAt, title, content, images }) => ({
-          id,
-          createdAt,
-          title,
-          content,
-          images: images || [],
-        })),
-      };
+      const fileData = { month: yearMonth, entries: toFileEntries(updatedEntries) };
 
       try {
         const savedFileId = await saveMonthFile(yearMonth, fileData, folderId, existingFileId);
@@ -367,7 +380,6 @@ export default function DiaryApp() {
           onDelete={handleDelete}
           onBack={handleBack}
           emptyMessage={selectedEntry ? null : emptyMessage}
-          imagesFolderId={imagesFolderId}
         />
       </main>
     </div>

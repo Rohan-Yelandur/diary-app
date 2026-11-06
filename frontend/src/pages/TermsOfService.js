@@ -30,7 +30,7 @@ export default function TermsOfService() {
         <h2>Your account and data</h2>
         <p>
           You are responsible for your Google account and for keeping your own backups. Your
-          entries and images belong to you and are stored only in your Google Drive. MyDay does
+          entries belong to you and are stored only in your Google Drive. MyDay does
           not store copies and cannot recover anything you delete.
         </p>
 

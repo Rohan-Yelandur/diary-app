@@ -398,7 +398,7 @@
   background: transparent;
 }
 .custom-select-dropdown::-webkit-scrollbar-thumb {
-  background-color: var(--color-border);
+  background-color: var(--color-scrollbar);
   border-radius: 10px;
 }
 
@@ -469,7 +469,8 @@
 }
 
 .editor-content {
-  flex: 1;
+  flex: none;
+  overflow: hidden;
   width: 100%;
   border: none;
   outline: none;
@@ -483,105 +484,6 @@
 
 .editor-content::placeholder {
   color: var(--color-border);
-}
-
-/* ---- Image Attachments ---- */
-.editor-images-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-}
-
-.editor-image-wrapper {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-}
-
-.editor-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.editor-image-loading {
-  width: 100%;
-  height: 100%;
-  background: var(--color-bg);
-  animation: pulse 1.5s infinite ease-in-out;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-.editor-image-remove {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity var(--transition);
-}
-
-.editor-image-wrapper:hover .editor-image-remove {
-  opacity: 1;
-}
-
-.editor-image-remove:hover {
-  background: var(--color-error);
-}
-
-/* ---- Editor Footer ---- */
-.editor-footer {
-  margin-top: auto;
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: flex-start;
-}
-
-.editor-attach-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-
-.editor-attach-btn:hover:not(:disabled) {
-  background: var(--color-bg);
-  border-color: var(--color-text-secondary);
-}
-
-.editor-attach-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* ---- Empty State ---- */
