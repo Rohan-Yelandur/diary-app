@@ -99,3 +99,26 @@
   border-bottom: 1px solid #ffc107;
   z-index: 100;
 }
+
+.landing-footer {
+  position: fixed;
+  bottom: var(--spacing-md);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+.landing-footer a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.landing-footer a:hover {
+  color: var(--color-accent-secondary);
+  text-decoration: underline;
+}
+
+.landing-footer a + a {
+  margin-left: var(--spacing-md);
+}

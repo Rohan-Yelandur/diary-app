@@ -4,7 +4,7 @@ import { initGoogleAuth, signIn as authSignIn, signOut as authSignOut, isAuthent
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // Initialize state based on whether we already have a valid token in sessionStorage
+  // Token lives in memory only, so this is always false on a fresh page load
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
   const [loading, setLoading] = useState(true);
 

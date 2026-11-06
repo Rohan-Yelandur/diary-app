@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LandingPage.css';
 
@@ -53,6 +53,11 @@ export default function LandingPage() {
           {authenticated ? 'Open my diary →' : 'Sign in with Google'}
         </button>
       </div>
+
+      <footer className="landing-footer">
+        <Link to="/privacy">Privacy Policy</Link>
+        <Link to="/terms">Terms of Service</Link>
+      </footer>
     </div>
   );
 }

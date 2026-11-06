@@ -2,15 +2,16 @@
  * Google OAuth 2.0 Authentication Service
  *
  * Uses Google Identity Services (GIS) library.
- * Tokens are stored in memory only — never persisted to localStorage.
+ * Tokens are kept in memory only — never written to sessionStorage or localStorage,
+ * so a page refresh requires signing in again.
  */
 
-const CLIENT_ID = '254580712324-391j6q5kflddke163o29rpf229af7p88.apps.googleusercontent.com'; // Replace with your Google OAuth Client ID
+const CLIENT_ID = '1004946372013-653gfekln000s3iocoaao482ekavbgde.apps.googleusercontent.com'; // Replace with your Google OAuth Client ID
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 let tokenClient = null;
-let accessToken = sessionStorage.getItem('diary_access_token') || null;
-let tokenExpiry = sessionStorage.getItem('diary_token_expiry') || null;
+let accessToken = null;
+let tokenExpiry = null;
 
 // Callbacks set by the AuthContext
 let onAuthSuccess = null;
@@ -59,8 +60,6 @@ export async function initGoogleAuth(successCallback, errorCallback) {
       accessToken = response.access_token;
       // GIS returns expires_in in seconds
       tokenExpiry = Date.now() + response.expires_in * 1000;
-      sessionStorage.setItem('diary_access_token', accessToken);
-      sessionStorage.setItem('diary_token_expiry', tokenExpiry);
       if (onAuthSuccess) onAuthSuccess();
     },
   });
@@ -85,8 +84,6 @@ export function signOut() {
   }
   accessToken = null;
   tokenExpiry = null;
-  sessionStorage.removeItem('diary_access_token');
-  sessionStorage.removeItem('diary_token_expiry');
   // Clear cached folder ID on sign-out
   localStorage.removeItem('diaryAppFolderId');
 }
